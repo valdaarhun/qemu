@@ -124,83 +124,48 @@ static bool vhost_svq_translate_addr(const VhostShadowVirtqueue *svq,
 }
 
 /**
- * Write descriptors to SVQ vring
+ * Write descriptors to SVQ split vring
  *
  * @svq: The shadow virtqueue
- * @sg: Cache for hwaddr
- * @iovec: The iovec from the guest
- * @num: iovec length
- * @more_descs: True if more descriptors come in the chain
- * @write: True if they are writeable descriptors
- *
- * Return true if success, false otherwise and print error.
+ * @out_sg: The iovec to the guest
+ * @out_num: Outgoing iovec length
+ * @in_sg: The iovec from the guest
+ * @in_num: Incoming iovec length
+ * @sgs: Cache for hwaddr
+ * @head: Saves current free_head
  */
-static bool vhost_svq_vring_write_descs(VhostShadowVirtqueue *svq, hwaddr *sg,
-                                        const struct iovec *iovec, size_t num,
-                                        bool more_descs, bool write)
+static void vhost_svq_add_split(VhostShadowVirtqueue *svq,
+                                const struct iovec *out_sg, size_t out_num,
+                                const struct iovec *in_sg, size_t in_num,
+                                hwaddr *sgs, unsigned *head)
 {
+    unsigned avail_idx, n;
     uint16_t i = svq->free_head, last = svq->free_head;
-    unsigned n;
-    uint16_t flags = write ? cpu_to_le16(VRING_DESC_F_WRITE) : 0;
+    vring_avail_t *avail = svq->vring.avail;
     vring_desc_t *descs = svq->vring.desc;
-    bool ok;
+    size_t num = in_num + out_num;
 
-    if (num == 0) {
-        return true;
-    }
-
-    ok = vhost_svq_translate_addr(svq, sg, iovec, num);
-    if (unlikely(!ok)) {
-        return false;
-    }
+    *head = svq->free_head;
 
     for (n = 0; n < num; n++) {
-        if (more_descs || (n + 1 < num)) {
-            descs[i].flags = flags | cpu_to_le16(VRING_DESC_F_NEXT);
+        descs[i].flags = cpu_to_le16(n < out_num ? 0 : VRING_DESC_F_WRITE);
+        if (n + 1 < num) {
+            descs[i].flags |= cpu_to_le16(VRING_DESC_F_NEXT);
             descs[i].next = cpu_to_le16(svq->desc_next[i]);
-        } else {
-            descs[i].flags = flags;
         }
-        descs[i].addr = cpu_to_le64(sg[n]);
-        descs[i].len = cpu_to_le32(iovec[n].iov_len);
+
+        descs[i].addr = cpu_to_le64(sgs[n]);
+        if (n < out_num) {
+            descs[i].len = cpu_to_le32(out_sg[n].iov_len);
+        } else {
+            descs[i].len = cpu_to_le32(in_sg[n - out_num].iov_len);
+        }
 
         last = i;
         i = cpu_to_le16(svq->desc_next[i]);
     }
 
     svq->free_head = le16_to_cpu(svq->desc_next[last]);
-    return true;
-}
-
-static bool vhost_svq_add_split(VhostShadowVirtqueue *svq,
-                                const struct iovec *out_sg, size_t out_num,
-                                const struct iovec *in_sg, size_t in_num,
-                                unsigned *head)
-{
-    unsigned avail_idx;
-    vring_avail_t *avail = svq->vring.avail;
-    bool ok;
-    g_autofree hwaddr *sgs = g_new(hwaddr, MAX(out_num, in_num));
-
-    *head = svq->free_head;
-
-    /* We need some descriptors here */
-    if (unlikely(!out_num && !in_num)) {
-        qemu_log_mask(LOG_GUEST_ERROR,
-                      "Guest provided element with no descriptors");
-        return false;
-    }
-
-    ok = vhost_svq_vring_write_descs(svq, sgs, out_sg, out_num, in_num > 0,
-                                     false);
-    if (unlikely(!ok)) {
-        return false;
-    }
-
-    ok = vhost_svq_vring_write_descs(svq, sgs, in_sg, in_num, false, true);
-    if (unlikely(!ok)) {
-        return false;
-    }
 
     /*
      * Put the entry in the available array (but don't update avail->idx until
@@ -213,8 +178,78 @@ static bool vhost_svq_add_split(VhostShadowVirtqueue *svq,
     /* Update the avail index after write the descriptor */
     smp_wmb();
     avail->idx = cpu_to_le16(svq->shadow_avail_idx);
+}
 
-    return true;
+/**
+ * Write descriptors to SVQ packed vring
+ *
+ * @svq: The shadow virtqueue
+ * @out_sg: The iovec to the guest
+ * @out_num: Outgoing iovec length
+ * @in_sg: The iovec from the guest
+ * @in_num: Incoming iovec length
+ * @sgs: Cache for hwaddr
+ * @head: Saves current free_head
+ */
+static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
+                                const struct iovec *out_sg, size_t out_num,
+                                const struct iovec *in_sg, size_t in_num,
+                                hwaddr *sgs, unsigned *head)
+{
+    uint16_t id, curr, i, head_flags = 0;
+    size_t num = out_num + in_num;
+    unsigned n;
+
+    struct vring_packed_desc *descs = svq->vring_packed.vring.desc;
+
+    *head = svq->vring_packed.next_avail_idx;
+    i = *head;
+    id = svq->free_head;
+    curr = id;
+
+    /* Write descriptors to SVQ packed vring */
+    for (n = 0; n < num; n++) {
+        uint16_t flags = cpu_to_le16(svq->vring_packed.avail_used_flags |
+                                     (n < out_num ? 0 : VRING_DESC_F_WRITE) |
+                                     (n + 1 == num ? 0 : VRING_DESC_F_NEXT));
+        if (i == *head) {
+            head_flags = flags;
+        } else {
+            descs[i].flags = flags;
+        }
+
+        descs[i].addr = cpu_to_le64(sgs[n]);
+        descs[i].id = id;
+        if (n < out_num) {
+            descs[i].len = cpu_to_le32(out_sg[n].iov_len);
+        } else {
+            descs[i].len = cpu_to_le32(in_sg[n - out_num].iov_len);
+        }
+
+        curr = cpu_to_le16(svq->desc_next[curr]);
+
+        if (++i >= svq->vring_packed.vring.num) {
+            i = 0;
+            svq->vring_packed.avail_used_flags ^=
+                    1 << VRING_PACKED_DESC_F_AVAIL |
+                    1 << VRING_PACKED_DESC_F_USED;
+        }
+    }
+
+    if (i <= *head) {
+        svq->vring_packed.avail_wrap_counter ^= 1;
+    }
+
+    svq->vring_packed.next_avail_idx = i;
+    svq->free_head = curr;
+
+    /*
+     * A driver MUST NOT make the first descriptor in the list
+     * available before all subsequent descriptors comprising
+     * the list are made available.
+     */
+    smp_wmb();
+    svq->vring_packed.vring.desc[*head].flags = head_flags;
 }
 
 static void vhost_svq_kick(VhostShadowVirtqueue *svq)
@@ -254,13 +289,34 @@ int vhost_svq_add(VhostShadowVirtqueue *svq, const struct iovec *out_sg,
     unsigned ndescs = in_num + out_num;
     bool ok;
 
+    /* We need some descriptors here */
+    if (unlikely(!ndescs)) {
+        qemu_log_mask(LOG_GUEST_ERROR,
+                      "Guest provided element with no descriptors");
+        return -EINVAL;
+    }
+
     if (unlikely(ndescs > vhost_svq_available_slots(svq))) {
         return -ENOSPC;
     }
 
-    ok = vhost_svq_add_split(svq, out_sg, out_num, in_sg, in_num, &qemu_head);
+    g_autofree hwaddr *sgs = g_new(hwaddr, ndescs);
+    ok = vhost_svq_translate_addr(svq, sgs, out_sg, out_num);
     if (unlikely(!ok)) {
         return -EINVAL;
+    }
+
+    ok = vhost_svq_translate_addr(svq, sgs + out_num, in_sg, in_num);
+    if (unlikely(!ok)) {
+        return -EINVAL;
+    }
+
+    if (virtio_vdev_has_feature(svq->vdev, VIRTIO_F_RING_PACKED)) {
+        vhost_svq_add_packed(svq, out_sg, out_num, in_sg,
+                             in_num, sgs, &qemu_head);
+    } else {
+        vhost_svq_add_split(svq, out_sg, out_num, in_sg,
+                            in_num, sgs, &qemu_head);
     }
 
     svq->num_free -= ndescs;
