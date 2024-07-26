@@ -1130,7 +1130,7 @@ static void vhost_vdpa_svq_unmap_rings(struct vhost_dev *dev,
     struct vhost_vdpa *v = dev->opaque;
     struct vhost_vring_addr svq_addr;
 
-    vhost_svq_get_vring_addr(svq, &svq_addr);
+    vhost_svq_get_vring_addr_split(svq, &svq_addr);
 
     vhost_vdpa_svq_unmap_ring(v, svq_addr.desc_user_addr);
 
@@ -1189,7 +1189,7 @@ static bool vhost_vdpa_svq_map_rings(struct vhost_dev *dev,
     size_t avail_offset;
     bool ok;
 
-    vhost_svq_get_vring_addr(svq, &svq_addr);
+    vhost_svq_get_vring_addr_split(svq, &svq_addr);
 
     driver_region = (DMAMap) {
         .translated_addr = svq_addr.desc_user_addr,
