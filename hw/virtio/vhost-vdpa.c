@@ -1356,7 +1356,7 @@ static int vhost_vdpa_dev_start(struct vhost_dev *dev, bool started)
     trace_vhost_vdpa_dev_start(dev, started);
     {
         FILE *f = fopen("vdpa_start.txt", "a");
-        fprintf(f, "started vhost vdpa dev\n");
+        fprintf(f, "started vhost vdpa dev: %d\n", started);
         fclose(f);
     }
 
