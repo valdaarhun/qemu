@@ -26,6 +26,11 @@
  */
 bool vhost_svq_valid_features(uint64_t features, Error **errp)
 {
+    {
+        FILE *file = fopen("sqvlog.txt", "a");
+        fprintf(file, "feat: %lx\n", features);
+        fclose(file);
+    }
     bool ok = true;
     uint64_t svq_features = features;
 
@@ -33,6 +38,8 @@ bool vhost_svq_valid_features(uint64_t features, Error **errp)
          ++b) {
         switch (b) {
         case VIRTIO_F_ANY_LAYOUT:
+        case VIRTIO_F_RING_PACKED:
+        case VIRTIO_F_RING_RESET:
         case VIRTIO_RING_F_EVENT_IDX:
             continue;
 
@@ -49,6 +56,11 @@ bool vhost_svq_valid_features(uint64_t features, Error **errp)
         default:
             if (svq_features & BIT_ULL(b)) {
                 svq_features &= ~BIT_ULL(b);
+                {
+                    FILE *file = fopen("sqvlog.txt", "a");
+                    fprintf(file, "b: %ld\n", b);
+                    fclose(file);
+                }
                 ok = false;
             }
         }
@@ -739,7 +751,11 @@ void vhost_svq_start(VhostShadowVirtqueue *svq, VirtIODevice *vdev,
     svq->vring.num = virtio_queue_get_num(vdev, virtio_get_queue_index(vq));
     svq->num_free = svq->vring.num;
     svq->is_packed = virtio_vdev_has_feature(svq->vdev, VIRTIO_F_RING_PACKED);
-
+    {
+        FILE *f = fopen("ispacked.txt", "a");
+        fprintf(f, "is_packed: 0x%d\n", svq->is_packed);
+        fclose(f);
+    }
     if (virtio_vdev_has_feature(svq->vdev, VIRTIO_F_RING_PACKED)) {
         svq->vring_packed.vring.desc = mmap(NULL, vhost_svq_memory_packed(svq),
                                             PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS,

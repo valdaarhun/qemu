@@ -167,7 +167,11 @@ static bool vhost_vdpa_net_valid_svq_features(uint64_t features, Error **errp)
                    invalid_dev_features);
         return false;
     }
-
+    {
+        FILE *file = fopen("delete.txt", "a");
+        fprintf(file, "feat: %lx\n", features);
+        fclose(file);
+    }
     return vhost_svq_valid_features(features, errp);
 }
 

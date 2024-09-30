@@ -618,6 +618,12 @@ static int vhost_vdpa_init(struct vhost_dev *dev, void *opaque, Error **errp)
         /* We don't have dev->features yet */
         uint64_t features;
         ret = vhost_vdpa_get_dev_features(dev, &features);
+        {
+            FILE *f = fopen("vhost_vdpa_init.txt", "a");
+            fprintf(f, "vhost features: %lx\n", dev->features);
+            fprintf(f, "acked features: %lx\n", dev->acked_features);
+            fclose(f);
+        }
         if (unlikely(ret)) {
             error_setg_errno(errp, -ret, "Could not get device features");
             return ret;
@@ -833,6 +839,18 @@ static int vhost_vdpa_set_features(struct vhost_dev *dev,
 
     trace_vhost_vdpa_set_features(dev, features);
     ret = vhost_vdpa_call(dev, VHOST_SET_FEATURES, &features);
+    {
+        FILE *f = fopen("q.txt", "a");
+        fprintf(f, "vhost features: %lx\n", features);
+        fprintf(f, "acked features: %lx\n", dev->acked_features);
+        fprintf(f, "%d\n", ret);
+        fclose(f);
+
+        f = fopen("qlog_set_feat.txt", "a");
+        fprintf(f, "vhost-vdpa: 0x%lx\n", features);
+        fprintf(f, "packed bit: %d\n", !!(features & (1ULL << 34)));
+        fclose(f);
+    }
     if (ret) {
         return ret;
     }
@@ -1512,7 +1530,12 @@ static int vhost_vdpa_get_features(struct vhost_dev *dev,
         /* Add SVQ logging capabilities */
         *features |= BIT_ULL(VHOST_F_LOG_ALL);
     }
-
+    {
+        FILE *f = fopen("log_get_feat.txt", "a");
+        fprintf(f, "vhost-vdpa: 0x%lx\n", *features);
+        fprintf(f, "packed bit: %d\n", !!(*features & (1ULL << 34)));
+        fclose(f);
+    }
     return ret;
 }
 
