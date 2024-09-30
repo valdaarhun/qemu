@@ -1485,14 +1485,6 @@ static uint64_t virtio_pci_common_read(void *opaque, hwaddr addr,
     case VIRTIO_PCI_COMMON_DF:
         if (proxy->dfselect <= 1) {
             VirtioDeviceClass *vdc = VIRTIO_DEVICE_GET_CLASS(vdev);
-            {
-                FILE *f = fopen("virtio.txt", "a");
-                fprintf(f, "host features: %s\n", vdev->name);
-                fprintf(f, "host features: %lx\n", vdev->host_features);
-                fprintf(f, "guest features: %lx\n", vdev->guest_features);
-                fprintf(f, "backend features: %lx\n", vdev->backend_features);
-                fclose(f);
-            }
             val = (vdev->host_features & ~vdc->legacy_features) >>
                 (32 * proxy->dfselect);
         }

@@ -840,13 +840,7 @@ static int vhost_vdpa_set_features(struct vhost_dev *dev,
     trace_vhost_vdpa_set_features(dev, features);
     ret = vhost_vdpa_call(dev, VHOST_SET_FEATURES, &features);
     {
-        FILE *f = fopen("q.txt", "a");
-        fprintf(f, "vhost features: %lx\n", features);
-        fprintf(f, "acked features: %lx\n", dev->acked_features);
-        fprintf(f, "%d\n", ret);
-        fclose(f);
-
-        f = fopen("qlog_set_feat.txt", "a");
+        FILE *f = fopen("qlog_set_feat.txt", "a");
         fprintf(f, "vhost-vdpa: 0x%lx\n", features);
         fprintf(f, "packed bit: %d\n", !!(features & (1ULL << 34)));
         fclose(f);
@@ -1360,6 +1354,11 @@ static int vhost_vdpa_dev_start(struct vhost_dev *dev, bool started)
     struct vhost_vdpa *v = dev->opaque;
     bool ok;
     trace_vhost_vdpa_dev_start(dev, started);
+    {
+        FILE *f = fopen("vdpa_start.txt", "a");
+        fprintf(f, "started vhost vdpa dev\n");
+        fclose(f);
+    }
 
     if (started) {
         vhost_vdpa_host_notifiers_init(dev);
