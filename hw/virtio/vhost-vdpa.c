@@ -1260,7 +1260,7 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
 
     {
         FILE *f = fopen("vdpa_svqs_start.txt", "a");
-        fprintf(f, "started vhost vdpa dev: %d\n", v->shadow_vqs_enabled);
+        fprintf(f, "svq enabled: %d\n", v->shadow_vqs_enabled);
         fclose(f);
     }
 
