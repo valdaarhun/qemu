@@ -1258,6 +1258,12 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
     Error *err = NULL;
     unsigned i;
 
+    {
+        FILE *f = fopen("vdpa_svqs_start.txt", "a");
+        fprintf(f, "started vhost vdpa dev: %d\n", v->shadow_vqs_enabled);
+        fclose(f);
+    }
+
     if (!v->shadow_vqs_enabled) {
         return true;
     }
@@ -1273,7 +1279,11 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
         if (unlikely(!ok)) {
             goto err;
         }
-
+        {
+            FILE *f = fopen("vdpa_svqs_start", "a");
+            fprintf(f, "started vhost vdpa dev: %u\n", i);
+            fclose(f);
+        }
         vhost_svq_start(svq, dev->vdev, vq, v->shared->iova_tree);
         ok = vhost_vdpa_svq_map_rings(dev, svq, &addr, &err);
         if (unlikely(!ok)) {
@@ -1354,11 +1364,6 @@ static int vhost_vdpa_dev_start(struct vhost_dev *dev, bool started)
     struct vhost_vdpa *v = dev->opaque;
     bool ok;
     trace_vhost_vdpa_dev_start(dev, started);
-    {
-        FILE *f = fopen("vdpa_start.txt", "a");
-        fprintf(f, "started vhost vdpa dev: %d\n", started);
-        fclose(f);
-    }
 
     if (started) {
         vhost_vdpa_host_notifiers_init(dev);
