@@ -1268,6 +1268,12 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
         return true;
     }
 
+    {
+        FILE *f = fopen("vdpa_svqs_start.txt", "a");
+        fprintf(f, "svq enabled: %d\n", v->shadow_vqs_enabled);
+        fclose(f);
+    }
+
     for (i = 0; i < v->shadow_vqs->len; ++i) {
         VirtQueue *vq = virtio_get_queue(dev->vdev, dev->vq_index + i);
         VhostShadowVirtqueue *svq = g_ptr_array_index(v->shadow_vqs, i);
