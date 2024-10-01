@@ -1277,6 +1277,11 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
         };
         int r;
         bool ok = vhost_vdpa_svq_setup(dev, svq, i, &err);
+        {
+            FILE *f = fopen("vdpa_svqs_start.txt", "a");
+            fprintf(f, "ok: %d\n", ok);
+            fclose(f);
+        }
         if (unlikely(!ok)) {
             goto err;
         }
