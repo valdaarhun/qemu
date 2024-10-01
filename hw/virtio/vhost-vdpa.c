@@ -1258,12 +1258,6 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
     Error *err = NULL;
     unsigned i;
 
-    {
-        FILE *f = fopen("vdpa_svqs_start.txt", "a");
-        fprintf(f, "svq enabled: %d\n", v->shadow_vqs_enabled);
-        fclose(f);
-    }
-
     if (!v->shadow_vqs_enabled) {
         return true;
     }
@@ -1271,6 +1265,7 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
     {
         FILE *f = fopen("vdpa_svqs_start.txt", "a");
         fprintf(f, "svq enabled: %d\n", v->shadow_vqs_enabled);
+        fprintf(f, "svq len: %d\n", v->shadow_vqs->len);
         fclose(f);
     }
 
