@@ -1237,6 +1237,11 @@ static bool vhost_vdpa_svq_setup(struct vhost_dev *dev,
                                  Error **errp)
 {
     uint16_t vq_index = dev->vq_index + idx;
+    {
+        FILE *f = fopen("vdpa_svq_setup.txt", "a");
+        fprintf(f, "[%s] started vhost vdpa dev: %u\n", dev->vdev->name, vq_index);
+        fclose(f);
+    }
     struct vhost_vring_state s = {
         .index = vq_index,
     };
