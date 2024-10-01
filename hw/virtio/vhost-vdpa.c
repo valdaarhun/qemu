@@ -1264,8 +1264,8 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
 
     {
         FILE *f = fopen("vdpa_svqs_start.txt", "a");
-        fprintf(f, "svq enabled: %d\n", v->shadow_vqs_enabled);
-        fprintf(f, "svq len: %d\n", v->shadow_vqs->len);
+        fprintf(f, "[%s] svq enabled: %d\n", dev->vdev->name, v->shadow_vqs_enabled);
+        fprintf(f, "[%s] svq len: %d\n", dev->vdev->name, v->shadow_vqs->len);
         fclose(f);
     }
 
@@ -1277,17 +1277,12 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
         };
         int r;
         bool ok = vhost_vdpa_svq_setup(dev, svq, i, &err);
-        {
-            FILE *f = fopen("vdpa_svqs_start.txt", "a");
-            fprintf(f, "ok: %d\n", ok);
-            fclose(f);
-        }
         if (unlikely(!ok)) {
             goto err;
         }
         {
-            FILE *f = fopen("vdpa_svqs_start", "a");
-            fprintf(f, "started vhost vdpa dev: %u\n", i);
+            FILE *f = fopen("vdpa_svqs_start.txt", "a");
+            fprintf(f, "[%s] started vhost vdpa dev: %u\n", dev->vdev->name, i);
             fclose(f);
         }
         vhost_svq_start(svq, dev->vdev, vq, v->shared->iova_tree);
