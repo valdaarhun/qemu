@@ -1249,14 +1249,14 @@ static bool vhost_vdpa_svq_setup(struct vhost_dev *dev,
     int r;
 
     r = vhost_vdpa_set_dev_vring_base(dev, &s);
-    if (unlikely(r)) {
-        error_setg_errno(errp, -r, "Cannot set vring base");
-        return false;
-    }
     {
         FILE *f = fopen("vdpa_svq_setup.txt", "a");
         fprintf(f, "[%s] ioctl ret: %d\n", dev->vdev->name, r);
         fclose(f);
+    }
+    if (unlikely(r)) {
+        error_setg_errno(errp, -r, "Cannot set vring base");
+        return false;
     }
     r = vhost_vdpa_svq_set_fds(dev, svq, idx, errp);
     return r == 0;
