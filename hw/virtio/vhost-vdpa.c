@@ -1239,7 +1239,8 @@ static bool vhost_vdpa_svq_setup(struct vhost_dev *dev,
     uint16_t vq_index = dev->vq_index + idx;
     {
         FILE *f = fopen("vdpa_svq_setup.txt", "a");
-        fprintf(f, "[%s] started vhost vdpa dev: %u\n", dev->vdev->name, vq_index);
+        fprintf(f, "[%s] svq setup: %u\n", dev->vdev->name, vq_index);
+        fprintf(f, "[%s] nvqs: %u\n", dev->vdev->name, dev->nvqs);
         fclose(f);
     }
     struct vhost_vring_state s = {
@@ -1252,7 +1253,11 @@ static bool vhost_vdpa_svq_setup(struct vhost_dev *dev,
         error_setg_errno(errp, -r, "Cannot set vring base");
         return false;
     }
-
+    {
+        FILE *f = fopen("vdpa_svq_setup.txt", "a");
+        fprintf(f, "[%s] ioctl ret: %d\n", dev->vdev->name, r);
+        fclose(f);
+    }
     r = vhost_vdpa_svq_set_fds(dev, svq, idx, errp);
     return r == 0;
 }
