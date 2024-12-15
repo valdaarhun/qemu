@@ -558,7 +558,7 @@ static void vhost_svq_flush(VhostShadowVirtqueue *svq,
             }
             {
                 FILE *f = fopen("flush.txt", "a");
-                fprintf(f, "%u\n", i);
+                fprintf(f, "len: %u, i: %u\n", len, i);
                 fclose(f);
             }
             if (unlikely(i >= svq->vring.num)) {
