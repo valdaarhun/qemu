@@ -1285,7 +1285,7 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
         return true;
     }
         {
-            FILE *f = fopen("vhost_vdpa_svqs_start.txt", "w");
+            FILE *f = fopen("vhost_vdpa_svqs_start.txt", "a");
             fprintf(f, "num: %u\n", v->shadow_vqs->len);
             fclose(f);
         }
@@ -1342,8 +1342,8 @@ static void vhost_vdpa_svqs_stop(struct vhost_dev *dev)
         return;
     }
         {
-            FILE *f = fopen("vhost_vdpa_svqs_stop.txt", "w");
-            fprintf(f, "stopped: %u\n", v->shadow_vqs->len);
+            FILE *f = fopen("vhost_vdpa_svqs_stop.txt", "a");
+            fprintf(f, "len: %u\n", v->shadow_vqs->len);
             fclose(f);
         }
     for (unsigned i = 0; i < v->shadow_vqs->len; ++i) {

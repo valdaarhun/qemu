@@ -149,7 +149,11 @@ static void vhost_svq_add_split(VhostShadowVirtqueue *svq,
     size_t num = in_num + out_num;
 
     *head = svq->free_head;
-
+        {
+            FILE *f = fopen("vhost_svq_add_split.txt", "a");
+            fprintf(f, "num: %lu\n", num);
+            fclose(f);
+        }
     for (n = 0; n < num; n++) {
         descs[i].flags = cpu_to_le16(n < out_num ? 0 : VRING_DESC_F_WRITE);
         if (n + 1 < num) {
@@ -537,7 +541,7 @@ static void vhost_svq_flush(VhostShadowVirtqueue *svq,
 {
     VirtQueue *vq = svq->vq;
     {
-        FILE *f = fopen("flush.txt", "w");
+        FILE *f = fopen("flush.txt", "a");
         fprintf(f, "flushed!!\n");
         fclose(f);
     }
@@ -747,7 +751,7 @@ void vhost_svq_start(VhostShadowVirtqueue *svq, VirtIODevice *vdev,
     svq->iova_tree = iova_tree;
     svq->is_packed = virtio_vdev_has_feature(svq->vdev, VIRTIO_F_RING_PACKED);
     {
-        FILE *f = fopen("packed.txt", "w");
+        FILE *f = fopen("packed.txt", "a");
         fprintf(f, "packed: %d\n", svq->is_packed);
         fclose(f);
     }
