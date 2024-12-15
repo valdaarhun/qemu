@@ -1337,11 +1337,15 @@ static void vhost_vdpa_svqs_stop(struct vhost_dev *dev)
     if (!v->shadow_vqs_enabled) {
         return;
     }
-
+        {
+            FILE *f = fopen("vhost_vdpa_svqs_stop.txt", "w");
+            fprintf(f, "stopped: %u\n", v->shadow_vqs->len);
+            fclose(f);
+        }
     for (unsigned i = 0; i < v->shadow_vqs->len; ++i) {
         VhostShadowVirtqueue *svq = g_ptr_array_index(v->shadow_vqs, i);
         {
-            FILE *f = fopen("vhost_vdpa_svqs_stop.txt", "w");
+            FILE *f = fopen("vhost_vdpa_svqs_stop.txt", "a");
             fprintf(f, "stopped: %u\n", i);
             fclose(f);
         }
