@@ -536,6 +536,11 @@ static void vhost_svq_flush(VhostShadowVirtqueue *svq,
                             bool check_for_avail_queue)
 {
     VirtQueue *vq = svq->vq;
+    {
+        FILE *f = fopen("flush.txt", "w");
+        fprintf(f, "flushed!!\n");
+        fclose(f);
+    }
 
     /* Forward as many used buffers as possible. */
     do {
@@ -741,6 +746,11 @@ void vhost_svq_start(VhostShadowVirtqueue *svq, VirtIODevice *vdev,
     svq->vq = vq;
     svq->iova_tree = iova_tree;
     svq->is_packed = virtio_vdev_has_feature(svq->vdev, VIRTIO_F_RING_PACKED);
+    {
+        FILE *f = fopen("packed.txt", "w");
+        fprintf(f, "packed: %d\n", svq->is_packed);
+        fclose(f);
+    }
 
     svq->vring.num = virtio_queue_get_num(vdev, virtio_get_queue_index(vq));
     svq->num_free = svq->vring.num;
