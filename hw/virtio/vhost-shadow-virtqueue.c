@@ -155,6 +155,11 @@ static void vhost_svq_add_split(VhostShadowVirtqueue *svq,
             fclose(f);
         }
     for (n = 0; n < num; n++) {
+        {
+            FILE *f = fopen("vhost_svq_add_split.txt", "a");
+            fprintf(f, "id: %u, len: %u\n", i, descs[i].len);
+            fclose(f);
+        }
         descs[i].flags = cpu_to_le16(n < out_num ? 0 : VRING_DESC_F_WRITE);
         if (n + 1 < num) {
             descs[i].flags |= cpu_to_le16(VRING_DESC_F_NEXT);
