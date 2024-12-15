@@ -540,16 +540,15 @@ static void vhost_svq_flush(VhostShadowVirtqueue *svq,
                             bool check_for_avail_queue)
 {
     VirtQueue *vq = svq->vq;
-    {
-        FILE *f = fopen("flush.txt", "a");
-        fprintf(f, "flushed!!\n");
-        fclose(f);
-    }
 
     /* Forward as many used buffers as possible. */
     do {
         unsigned i = 0;
-
+        {
+            FILE *f = fopen("flush.txt", "a");
+            fprintf(f, "=========================================\n");
+            fclose(f);
+        }
         vhost_svq_disable_notification(svq);
         while (true) {
             uint32_t len;
@@ -557,7 +556,11 @@ static void vhost_svq_flush(VhostShadowVirtqueue *svq,
             if (!elem) {
                 break;
             }
-
+            {
+                FILE *f = fopen("flush.txt", "a");
+                fprintf(f, "%u\n", i);
+                fclose(f);
+            }
             if (unlikely(i >= svq->vring.num)) {
                 qemu_log_mask(LOG_GUEST_ERROR,
                          "More than %u used buffers obtained in a %u size SVQ",
