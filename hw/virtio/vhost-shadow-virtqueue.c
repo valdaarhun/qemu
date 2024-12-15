@@ -503,11 +503,6 @@ static VirtQueueElement *vhost_svq_get_buf(VhostShadowVirtqueue *svq,
     last_used = svq->last_used_idx & (svq->vring.num - 1);
     used_elem.id = le32_to_cpu(used->ring[last_used].id);
     used_elem.len = le32_to_cpu(used->ring[last_used].len);
-    {
-        FILE *f = fopen("vhost_svq_get_buf.txt", "a");
-        fprintf(f, "len: %u, i: %u\n", used_elem.len, used_elem.id);
-        fclose(f);
-    }
     svq->last_used_idx++;
     if (unlikely(used_elem.id >= svq->vring.num)) {
         qemu_log_mask(LOG_GUEST_ERROR, "Device %s says index %u is used",
@@ -521,7 +516,11 @@ static VirtQueueElement *vhost_svq_get_buf(VhostShadowVirtqueue *svq,
             svq->vdev->name, used_elem.id);
         return NULL;
     }
-
+    {
+        FILE *f = fopen("vhost_svq_get_buf.txt", "a");
+        fprintf(f, "len: %u, i: %u\n", used_elem.len, used_elem.id);
+        fclose(f);
+    }
     num = svq->desc_state[used_elem.id].ndescs;
     svq->desc_state[used_elem.id].ndescs = 0;
     last_used_chain = vhost_svq_last_desc_of_chain(svq, num, used_elem.id);
