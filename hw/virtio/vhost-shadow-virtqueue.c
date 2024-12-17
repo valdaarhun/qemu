@@ -772,6 +772,12 @@ void vhost_svq_start(VhostShadowVirtqueue *svq, VirtIODevice *vdev,
     }
 
     svq->vring.num = virtio_queue_get_num(vdev, virtio_get_queue_index(vq));
+        {
+            FILE *f = fopen("vhost_vdpa_svqs_start.txt", "a");
+            fprintf(f, "name: %s\n", vdev->name);
+            fprintf(f, "num: %u\n", svq->vring.num);
+            fclose(f);
+        }
     svq->num_free = svq->vring.num;
     svq->vring.desc = mmap(NULL, vhost_svq_descriptor_area_size(svq),
                            PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS,
