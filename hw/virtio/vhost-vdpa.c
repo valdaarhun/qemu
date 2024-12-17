@@ -1286,6 +1286,7 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
     }
         {
             FILE *f = fopen("vhost_vdpa_svqs_start.txt", "a");
+            fprintf(f, "name: %s\n", dev->vdev->name);
             fprintf(f, "num: %u\n", v->shadow_vqs->len);
             fclose(f);
         }
