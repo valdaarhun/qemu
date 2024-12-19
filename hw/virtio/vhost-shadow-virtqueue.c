@@ -517,8 +517,10 @@ static VirtQueueElement *vhost_svq_get_buf(VhostShadowVirtqueue *svq,
         return NULL;
     }
     {
+        VirtQueue *q = svq->vq;
         FILE *f = fopen("vhost_svq_get_buf.txt", "a");
-        fprintf(f, "size: %u, len: %u, i: %u\n", svq->vring.num, used_elem.len, used_elem.id);
+        fprintf(f, "size: %u, len: %u, i: %u, vq idx: %u\n",
+            svq->vring.num, used_elem.len, used_elem.id, virtio_get_queue_index(q));
         fclose(f);
     }
     num = svq->desc_state[used_elem.id].ndescs;
