@@ -163,6 +163,12 @@ static bool vhost_svq_vring_write_descs(VhostShadowVirtqueue *svq, hwaddr *sg,
     }
 
     for (n = 0; n < num; n++) {
+        {
+            FILE *f = fopen("vhost_svq_add_split.txt", "a");
+            fprintf(f, "id: %u, len: %u\n", i, descs[i].len);
+            fprintf(f, "--\n");
+            fclose(f);
+        }
         if (more_descs || (n + 1 < num)) {
             descs[i].flags = flags | cpu_to_le16(VRING_DESC_F_NEXT);
             descs[i].next = cpu_to_le16(svq->desc_next[i]);
@@ -171,7 +177,12 @@ static bool vhost_svq_vring_write_descs(VhostShadowVirtqueue *svq, hwaddr *sg,
         }
         descs[i].addr = cpu_to_le64(sg[n]);
         descs[i].len = cpu_to_le32(iovec[n].iov_len);
-
+        {
+            FILE *f = fopen("vhost_svq_add_split.txt", "a");
+            fprintf(f, "id: %u, len: %u\n", i, descs[i].len);
+            fprintf(f, "==\n");
+            fclose(f);
+        }
         last = i;
         i = cpu_to_le16(svq->desc_next[i]);
     }
@@ -198,7 +209,11 @@ static bool vhost_svq_add_split(VhostShadowVirtqueue *svq,
                       "Guest provided element with no descriptors");
         return false;
     }
-
+    {
+        FILE *f = fopen("vhost_svq_add_split.txt", "a");
+        fprintf(f, "num: %lu\n", out_num + in_num);
+        fclose(f);
+    }
     ok = vhost_svq_vring_write_descs(svq, sgs, out_sg, out_num, in_num > 0,
                                      false);
     if (unlikely(!ok)) {
@@ -454,6 +469,13 @@ static VirtQueueElement *vhost_svq_get_buf(VhostShadowVirtqueue *svq,
         return NULL;
     }
 
+    {
+        VirtQueue *q = svq->vq;
+        FILE *f = fopen("vhost_svq_get_buf.txt", "a");
+        fprintf(f, "size: %u, len: %u, i: %u, vq idx: %u\n",
+            svq->vring.num, used_elem.len, used_elem.id, virtio_get_queue_index(q));
+        fclose(f);
+    }
     num = svq->desc_state[used_elem.id].ndescs;
     svq->desc_state[used_elem.id].ndescs = 0;
     last_used_chain = vhost_svq_last_desc_of_chain(svq, num, used_elem.id);
@@ -490,6 +512,11 @@ static void vhost_svq_flush(VhostShadowVirtqueue *svq,
     do {
         unsigned i = 0;
 
+        {
+            FILE *f = fopen("flush.txt", "a");
+            fprintf(f, "=========================================\n");
+            fclose(f);
+        }
         vhost_svq_disable_notification(svq);
         while (true) {
             uint32_t len;
@@ -498,6 +525,12 @@ static void vhost_svq_flush(VhostShadowVirtqueue *svq,
                 break;
             }
 
+            {
+                FILE *f = fopen("flush.txt", "a");
+                VirtQueue *q = svq->vq;
+                fprintf(f, "len1: %u, len2: %u, i: %u, vq idx: %u\n", len, elem->len, i, virtio_get_queue_index(q));
+                fclose(f);
+            }
             if (unlikely(i >= svq->vring.num)) {
                 qemu_log_mask(LOG_GUEST_ERROR,
                          "More than %u used buffers obtained in a %u size SVQ",
@@ -679,6 +712,12 @@ void vhost_svq_start(VhostShadowVirtqueue *svq, VirtIODevice *vdev,
     svq->iova_tree = iova_tree;
 
     svq->vring.num = virtio_queue_get_num(vdev, virtio_get_queue_index(vq));
+    {
+        FILE *f = fopen("vhost_vdpa_svqs_start.txt", "a");
+        fprintf(f, "name: %s\n", vdev->name);
+        fprintf(f, "num: %u\n", svq->vring.num);
+        fclose(f);
+    }
     svq->num_free = svq->vring.num;
     svq->vring.desc = mmap(NULL, vhost_svq_driver_area_size(svq),
                            PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS,

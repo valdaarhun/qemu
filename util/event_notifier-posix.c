@@ -106,6 +106,13 @@ int event_notifier_set(EventNotifier *e)
     static const uint64_t value = 1;
     ssize_t ret;
 
+    {
+        FILE *f = fopen("event_notifier.txt", "a");
+        fprintf(f, "init?: %d\n", e->initialized);
+        fprintf(f, "wfd?: %d\n", e->wfd);
+        fclose(f);
+    }
+
     if (!e->initialized) {
         return -1;
     }
