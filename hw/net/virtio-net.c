@@ -1920,7 +1920,11 @@ static ssize_t virtio_net_receive_rcu(NetClientState *nc, const uint8_t *buf,
     unsigned mhdr_cnt = 0;
     size_t offset, i, guest_offset, j;
     ssize_t err;
-
+    {
+        FILE *f = fopen("virtnet_recv_rcu", "a");
+        fprintf(f, "init\n");
+        fclose(f);
+    }
     memset(&hdr.virtio_net, 0, sizeof(hdr.virtio_net));
 
     if (n->rss_data.enabled && n->rss_data.enabled_software_rss) {
