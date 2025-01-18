@@ -1773,6 +1773,19 @@ static int receive_filter(VirtIONet *n, const uint8_t *buf, int size)
             }
         }
     } else { // unicast
+        {
+            FILE *f = fopen("virtnet_recv_rcu", "a");
+            fprintf(f, "nou: %d, allu: %d, overf: %d\n", n->nouni, n->alluni, n->mac_table.uni_overflow);
+            for(int i = 0; i < 6; i++) {
+                fprintf(f, "%02x ", ptr[i]);
+            }
+            fprintf(f, "\n");
+            for(int i = 0; i < 6; i++) {
+                fprintf(f, "%02x ", n->mac[i]);
+            }
+            fprintf(f, "\n");
+            fclose(f);
+        }
         if (n->nouni) {
             return 0;
         } else if (n->alluni || n->mac_table.uni_overflow) {
