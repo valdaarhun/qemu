@@ -1956,6 +1956,12 @@ static ssize_t virtio_net_receive_rcu(NetClientState *nc, const uint8_t *buf,
 
     offset = i = 0;
 
+    {
+        FILE *f = fopen("virtnet_recv_rcu", "a");
+        fprintf(f, "recv filter passed\n");
+        fclose(f);
+    }
+
     while (offset < size) {
         VirtQueueElement *elem;
         int len, total;
