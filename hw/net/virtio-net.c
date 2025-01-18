@@ -1746,6 +1746,11 @@ static int receive_filter(VirtIONet *n, const uint8_t *buf, int size)
         return 1;
 
     ptr += n->host_hdr_len;
+    {
+        FILE *f = fopen("virtnet_recv_rcu", "a");
+        fprintf(f, "ethertype: %02x %02x\n", ptr[12], ptr[13]);
+        fclose(f);
+    }
 
     if (!memcmp(&ptr[12], vlan, sizeof(vlan))) {
         int vid = lduw_be_p(ptr + 14) & 0xfff;
