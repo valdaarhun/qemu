@@ -1951,6 +1951,12 @@ static ssize_t virtio_net_receive_rcu(NetClientState *nc, const uint8_t *buf,
         return 0;
     }
 
+    {
+        FILE *f = fopen("virtnet_recv_rcu", "a");
+        fprintf(f, "has buffers passed\n");
+        fclose(f);
+    }
+
     if (!receive_filter(n, buf, size))
         return size;
 
