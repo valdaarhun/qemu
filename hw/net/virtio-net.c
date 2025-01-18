@@ -1748,7 +1748,7 @@ static int receive_filter(VirtIONet *n, const uint8_t *buf, int size)
     ptr += n->host_hdr_len;
     {
         FILE *f = fopen("virtnet_recv_rcu", "a");
-        fprintf(f, "ethertype: %02x %02x\n", ptr[12], ptr[13]);
+        fprintf(f, "ethertype: %02x %02x %02x\n", ptr[0], ptr[12], ptr[13]);
         fclose(f);
     }
 
