@@ -1938,6 +1938,12 @@ static ssize_t virtio_net_receive_rcu(NetClientState *nc, const uint8_t *buf,
         return -1;
     }
 
+    {
+        FILE *f = fopen("virtnet_recv_rcu", "a");
+        fprintf(f, "can recv passed\n");
+        fclose(f);
+    }
+
     q = virtio_net_get_subqueue(nc);
 
     /* hdr_len refers to the header we supply to the guest */
