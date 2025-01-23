@@ -1106,6 +1106,14 @@ static int virtio_net_handle_mac(VirtIONet *n, uint8_t cmd,
             return VIRTIO_NET_ERR;
         }
         s = iov_to_buf(iov, iov_cnt, 0, &n->mac, sizeof(n->mac));
+        {
+            FILE *f = fopen("net_handle_mac", "a");
+            for(int id = 0; id < 6; id++) {
+                fprintf(f, "%02x ", n->mac[id]);
+            }
+            fprintf(f, "\n");
+            fclose(f);
+        }
         assert(s == sizeof(n->mac));
         qemu_format_nic_info_str(qemu_get_queue(n->nic), n->mac);
         rxfilter_notify(nc);
@@ -1776,13 +1784,14 @@ static int receive_filter(VirtIONet *n, const uint8_t *buf, int size)
         {
             FILE *f = fopen("virtnet_recv_rcu", "a");
             fprintf(f, "nou: %d, allu: %d, overf: %d\n", n->nouni, n->alluni, n->mac_table.uni_overflow);
-            for(int i = 0; i < 6; i++) {
-                fprintf(f, "%02x ", ptr[i]);
+            for(int id = 0; id < 6; id++) {
+                fprintf(f, "%02x ", ptr[id]);
             }
             fprintf(f, "\n");
-            for(int i = 0; i < 6; i++) {
-                fprintf(f, "%02x ", n->mac[i]);
+            for(int id = 0; id < 6; id++) {
+                fprintf(f, "%02x ", n->mac[id]);
             }
+            // n->mac[5] = 0x57;
             fprintf(f, "\n");
             fclose(f);
         }
