@@ -1749,6 +1749,11 @@ static int receive_filter(VirtIONet *n, const uint8_t *buf, int size)
     static const uint8_t vlan[] = {0x81, 0x00};
     uint8_t *ptr = (uint8_t *)buf;
     int i;
+    {
+        FILE *f = fopen("virtnet_recv_rcu", "a");
+        fprintf(f, "promisc: %hhd\n", n->promisc);
+        fclose(f);
+    }
 
     if (n->promisc)
         return 1;
@@ -1756,7 +1761,7 @@ static int receive_filter(VirtIONet *n, const uint8_t *buf, int size)
     ptr += n->host_hdr_len;
     {
         FILE *f = fopen("virtnet_recv_rcu", "a");
-        fprintf(f, "ethertype: %02x %02x %02x\n", ptr[0], ptr[12], ptr[13]);
+        fprintf(f, "ethertype: %02x %02x\n", ptr[12], ptr[13]);
         fclose(f);
     }
 
