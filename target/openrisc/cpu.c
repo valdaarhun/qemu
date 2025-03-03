@@ -194,7 +194,8 @@ static void or1200_initfn(Object *obj)
     OpenRISCCPU *cpu = OPENRISC_CPU(obj);
 
     cpu->env.vr = 0x13000008;
-    cpu->env.upr = UPR_UP | UPR_DMP | UPR_IMP | UPR_PICP | UPR_TTP | UPR_PMP;
+    cpu->env.upr = UPR_UP | UPR_DMP | UPR_DCP | UPR_ICP | UPR_IMP |
+                   UPR_PICP | UPR_TTP | UPR_PMP;
     cpu->env.cpucfgr = CPUCFGR_NSGF | CPUCFGR_OB32S | CPUCFGR_OF32S |
                        CPUCFGR_EVBARP;
 
@@ -213,7 +214,8 @@ static void openrisc_any_initfn(Object *obj)
     cpu->env.vr2 = 0;           /* No version specific id */
     cpu->env.avr = 0x01030000;  /* Architecture v1.3 */
 
-    cpu->env.upr = UPR_UP | UPR_DMP | UPR_IMP | UPR_PICP | UPR_TTP | UPR_PMP;
+    cpu->env.upr = UPR_UP | UPR_DMP | UPR_DCP | UPR_ICP | UPR_IMP |
+                   UPR_PICP | UPR_TTP | UPR_PMP;
     cpu->env.cpucfgr = CPUCFGR_NSGF | CPUCFGR_OB32S | CPUCFGR_OF32S |
                        CPUCFGR_AVRP | CPUCFGR_EVBARP | CPUCFGR_OF64A32S;
 
