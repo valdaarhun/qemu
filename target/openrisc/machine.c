@@ -101,6 +101,8 @@ static const VMStateDescription vmstate_env = {
         VMSTATE_UINT32(cpucfgr, CPUOpenRISCState),
         VMSTATE_UINT32(dmmucfgr, CPUOpenRISCState),
         VMSTATE_UINT32(immucfgr, CPUOpenRISCState),
+        VMSTATE_UINT32(dccfgr, CPUOpenRISCState),
+        VMSTATE_UINT32(iccfgr, CPUOpenRISCState),
         VMSTATE_UINT32(evbar, CPUOpenRISCState),
         VMSTATE_UINT32(pmr, CPUOpenRISCState),
         VMSTATE_UINT32(esr, CPUOpenRISCState),

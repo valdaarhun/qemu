@@ -198,6 +198,16 @@ static void or1200_initfn(Object *obj)
                    UPR_PICP | UPR_TTP | UPR_PMP;
     cpu->env.cpucfgr = CPUCFGR_NSGF | CPUCFGR_OB32S | CPUCFGR_OF32S |
                        CPUCFGR_EVBARP;
+    
+    /* 4-way 16KB data cache */
+    cpu->env.dccfgr = (DCCFGR_NCW & (1 << 1))
+                    | (DCCFGR_NCS & (8 << 3))
+                    | (DCCFGR_CBS & (0 << 7));
+
+    /* 1-way direct-mapped 8KB data cache */
+    cpu->env.iccfgr = (ICCFGR_NCW & (0 << 2))
+                    | (ICCFGR_NCS & (9 << 3))
+                    | (ICCFGR_CBS & (0 << 7));
 
     /* 1Way, TLB_SIZE entries.  */
     cpu->env.dmmucfgr = (DMMUCFGR_NTW & (0 << 2))
@@ -218,6 +228,16 @@ static void openrisc_any_initfn(Object *obj)
                    UPR_PICP | UPR_TTP | UPR_PMP;
     cpu->env.cpucfgr = CPUCFGR_NSGF | CPUCFGR_OB32S | CPUCFGR_OF32S |
                        CPUCFGR_AVRP | CPUCFGR_EVBARP | CPUCFGR_OF64A32S;
+
+    /* 4-way 16KB data cache */
+    cpu->env.dccfgr = (DCCFGR_NCW & (1 << 1))
+                    | (DCCFGR_NCS & (8 << 3))
+                    | (DCCFGR_CBS & (0 << 7));
+
+    /* 1-way direct-mapped 8KB data cache */
+    cpu->env.iccfgr = (ICCFGR_NCW & (0 << 2))
+                    | (ICCFGR_NCS & (9 << 3))
+                    | (ICCFGR_CBS & (0 << 7));
 
     /* 1Way, TLB_SIZE entries.  */
     cpu->env.dmmucfgr = (DMMUCFGR_NTW & (0 << 2))

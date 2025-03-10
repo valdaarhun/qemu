@@ -250,6 +250,12 @@ target_ulong HELPER(mfspr)(CPUOpenRISCState *env, target_ulong rd,
     case TO_SPR(0, 4): /* IMMUCFGR */
         return env->immucfgr;
 
+    case TO_SPR(0, 5): /* DCCFGR */
+        return env->dccfgr;
+
+    case TO_SPR(0, 6): /* ICCFGR */
+        return env->iccfgr;
+
     case TO_SPR(0, 9): /* VR2 */
         return env->vr2;
 

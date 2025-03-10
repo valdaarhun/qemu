@@ -113,6 +113,31 @@ enum {
     IMMUCFGR_HTR = (1 << 11),
 };
 
+/* Data cache configure register */
+enum {
+    DCCFGR_NCW = (7 << 0),
+    DCCFGR_NCS = (15 << 3),
+    DCCFGR_CBS = (1 << 7),
+    DCCFGR_CWS = (1 << 8),
+    DCCFGR_CCRI = (1 << 9),
+    DCCFGR_CBIRI = (1 << 10),
+    DCCFGR_CBPRI = (1 << 11),
+    DCCFGR_CBLRI = (1 << 12),
+    DCCFGR_CBFRI = (1 << 13),
+    DCCFGR_CBWBRI = (1 << 14),
+};
+
+/* Instruction cache configure register */
+enum {
+    ICCFGR_NCW = (7 << 0),
+    ICCFGR_NCS = (15 << 3),
+    ICCFGR_CBS = (1 << 7),
+    ICCFGR_CCRI = (1 << 9),
+    ICCFGR_CBIRI = (1 << 10),
+    ICCFGR_CBPRI = (1 << 11),
+    ICCFGR_CBLRI = (1 << 12),
+};
+
 /* Power management register */
 enum {
     PMR_SDF = (15 << 0),
@@ -272,6 +297,8 @@ typedef struct CPUArchState {
     uint32_t avr;             /* Architecture version register */
     uint32_t upr;             /* Unit presence register */
     uint32_t cpucfgr;         /* CPU configure register */
+    uint32_t dccfgr;          /* Data cache configure register */
+    uint32_t iccfgr;          /* Instruction cache configure register */
     uint32_t dmmucfgr;        /* DMMU configure register */
     uint32_t immucfgr;        /* IMMU configure register */
 
