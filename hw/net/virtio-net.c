@@ -2017,6 +2017,11 @@ static ssize_t virtio_net_receive_rcu(NetClientState *nc, const uint8_t *buf,
                            buf + offset, size - offset);
         total += len;
         offset += len;
+        {
+            FILE *f = fopen("virtnet_recv_rcu", "a");
+            fprintf(f, "len: %d, total: %d, offset: %lu\n", len, total, offset);
+            fclose(f);
+        }
         /* If buffers can't be merged, at this point we
          * must have consumed the complete packet.
          * Otherwise, drop it. */
@@ -2751,6 +2756,12 @@ static int32_t virtio_net_flush_tx(VirtIONetQueue *q)
 
         out_num = elem->out_num;
         out_sg = elem->out_sg;
+        {
+            FILE *f = fopen("virtio_net_flush_tx.txt", "a");
+            fprintf(f, "out_num: %u\n", out_num);
+            fprintf(f, "needs_vnet_hdr_swap: %d\n", n->needs_vnet_hdr_swap);
+            fclose(f);
+        }
         if (out_num < 1) {
             virtio_error(vdev, "virtio-net header not in first element");
             goto detach;

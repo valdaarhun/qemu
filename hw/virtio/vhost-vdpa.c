@@ -1297,7 +1297,12 @@ static bool vhost_vdpa_svqs_start(struct vhost_dev *dev)
     if (!v->shadow_vqs_enabled) {
         return true;
     }
-
+        {
+            FILE *f = fopen("vhost_vdpa_svqs_start.txt", "a");
+            fprintf(f, "name: %s\n", dev->vdev->name);
+            fprintf(f, "num: %u\n", v->shadow_vqs->len);
+            fclose(f);
+        }
     for (i = 0; i < v->shadow_vqs->len; ++i) {
         VirtQueue *vq = virtio_get_queue(dev->vdev, dev->vq_index + i);
         VhostShadowVirtqueue *svq = g_ptr_array_index(v->shadow_vqs, i);
@@ -1350,9 +1355,18 @@ static void vhost_vdpa_svqs_stop(struct vhost_dev *dev)
     if (!v->shadow_vqs_enabled) {
         return;
     }
-
+        {
+            FILE *f = fopen("vhost_vdpa_svqs_stop.txt", "a");
+            fprintf(f, "len: %u\n", v->shadow_vqs->len);
+            fclose(f);
+        }
     for (unsigned i = 0; i < v->shadow_vqs->len; ++i) {
         VhostShadowVirtqueue *svq = g_ptr_array_index(v->shadow_vqs, i);
+        {
+            FILE *f = fopen("vhost_vdpa_svqs_stop.txt", "a");
+            fprintf(f, "stopped: %u\n", i);
+            fclose(f);
+        }
 
         vhost_svq_stop(svq);
         vhost_vdpa_svq_unmap_rings(dev, svq);
