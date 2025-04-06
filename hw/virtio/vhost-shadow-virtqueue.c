@@ -240,9 +240,18 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
     id = svq->free_head;
     curr = id;
     *head = id;
-
+    {
+        FILE *f = fopen("vhost_svq_add_packed.txt", "a");
+        fprintf(f, "num: %lu\n", num);
+        fclose(f);
+    }
     /* Write descriptors to SVQ packed vring */
     for (n = 0; n < num; n++) {
+        {
+            FILE *f = fopen("vhost_svq_add_packed.txt", "a");
+            fprintf(f, "i: %u, id: %u, len: %u, flags: %u\n", i, id, descs[i].id, descs[i].flags);
+            fclose(f);
+        }
         uint16_t flags = cpu_to_le16(svq->vring_packed.avail_used_flags |
                                      (n < out_num ? 0 : VRING_DESC_F_WRITE) |
                                      (n + 1 == num ? 0 : VRING_DESC_F_NEXT));
@@ -267,6 +276,11 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
             svq->vring_packed.avail_used_flags ^=
                 1 << VRING_PACKED_DESC_F_AVAIL |
                 1 << VRING_PACKED_DESC_F_USED;
+        }
+        {
+            FILE *f = fopen("vhost_svq_add_packed.txt", "a");
+            fprintf(f, "i: %u, id: %u, len: %u, flags: %u\n", i, id, descs[i].id, descs[i].flags);
+            fclose(f);
         }
     }
 
@@ -373,7 +387,12 @@ int vhost_svq_add(VhostShadowVirtqueue *svq, const struct iovec *out_sg,
     if (unlikely(!ok)) {
         return -EINVAL;
     }
-
+    {
+        FILE *f = fopen("vhost_svq_add.txt", "a");
+        fprintf(f, "Ready to add desc: is_packed: %u\n", svq->is_packed);
+        fprintf(f, "==\n");
+        fclose(f);
+    }
     if (svq->is_packed) {
         vhost_svq_add_packed(svq, out_sg, out_num, in_sg,
                              in_num, sgs, &qemu_head);
@@ -381,7 +400,12 @@ int vhost_svq_add(VhostShadowVirtqueue *svq, const struct iovec *out_sg,
         vhost_svq_add_split(svq, out_sg, out_num, in_sg,
                             in_num, sgs, &qemu_head);
     }
-
+    {
+        FILE *f = fopen("vhost_svq_add.txt", "a");
+        fprintf(f, "Before desc update: num_free: %u\n", svq->num_free);
+        fprintf(f, "==\n");
+        fclose(f);
+    }
     svq->num_free -= ndescs;
     svq->desc_state[qemu_head].elem = elem;
     svq->desc_state[qemu_head].ndescs = ndescs;
@@ -389,6 +413,12 @@ int vhost_svq_add(VhostShadowVirtqueue *svq, const struct iovec *out_sg,
         vhost_svq_kick_packed(svq);
     } else {
         vhost_svq_kick_split(svq);
+    }
+    {
+        FILE *f = fopen("vhost_svq_add.txt", "a");
+        fprintf(f, "After desc update (and kick): num_free: %u\n", svq->num_free);
+        fprintf(f, "==\n");
+        fclose(f);
     }
     return 0;
 }
