@@ -262,14 +262,14 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
         }
 
         descs[i].addr = cpu_to_le64(sgs[n]);
-        descs[i].id = id;
+        descs[i].id = cpu_to_le16(id);
         if (n < out_num) {
             descs[i].len = cpu_to_le32(out_sg[n].iov_len);
         } else {
             descs[i].len = cpu_to_le32(in_sg[n - out_num].iov_len);
         }
 
-        curr = cpu_to_le16(svq->desc_next[curr]);
+        curr = svq->desc_next[curr];
 
         if (++i >= svq->vring_packed.vring.num) {
             i = 0;
@@ -279,7 +279,7 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
         }
         {
             FILE *f = fopen("vhost_svq_add_packed.txt", "a");
-            fprintf(f, "i: %u, id: %u, len: %u, flags: %u\n", i, id, descs[i].id, descs[i].flags);
+            fprintf(f, "i: %u, id: %u, len: %u, flags: %u, curr: %u\n", i, id, descs[i].id, descs[i].flags, curr);
             fclose(f);
         }
     }
