@@ -173,7 +173,8 @@ static void vhost_svq_add_split(VhostShadowVirtqueue *svq,
     for (n = 0; n < num; n++) {
         {
             FILE *f = fopen("vhost_svq_add_split.txt", "a");
-            fprintf(f, "id: %u, len: %u\n", i, descs[i].len);
+            fprintf(f, "id: %u, len: %u, flags: %u, addr: %lu, vq idx: %u\n",
+                    i, descs[i].len, descs[i].flags, descs[i].addr, virtio_get_queue_index(svq->vq));
             fclose(f);
         }
         descs[i].flags = cpu_to_le16(n < out_num ? 0 : VRING_DESC_F_WRITE);
@@ -190,8 +191,8 @@ static void vhost_svq_add_split(VhostShadowVirtqueue *svq,
         }
         {
             FILE *f = fopen("vhost_svq_add_split.txt", "a");
-            fprintf(f, "id: %u, len: %u\n", i, descs[i].len);
-            fprintf(f, "==\n");
+            fprintf(f, "id: %u, len: %u, flags: %u, addr: %lu, vq idx: %u\n",
+                    i, descs[i].len, descs[i].flags, descs[i].addr, virtio_get_queue_index(svq->vq));
             fclose(f);
         }
         last = i;
@@ -242,14 +243,15 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
     *head = id;
     {
         FILE *f = fopen("vhost_svq_add_packed.txt", "a");
-        fprintf(f, "num: %lu\n", num);
+        fprintf(f, "num: %lu, init_flags: %u\n", num, svq->vring_packed.avail_used_flags);
         fclose(f);
     }
     /* Write descriptors to SVQ packed vring */
     for (n = 0; n < num; n++) {
         {
             FILE *f = fopen("vhost_svq_add_packed.txt", "a");
-            fprintf(f, "i: %u, id: %u, len: %u, flags: %u\n", i, id, descs[i].id, descs[i].flags);
+            fprintf(f, "i: %u, id: %u, len: %u, flags: %u, vq idx: %u\n",
+                    i, descs[i].id, descs[i].len, descs[i].flags, virtio_get_queue_index(svq->vq));
             fclose(f);
         }
         uint16_t flags = cpu_to_le16(svq->vring_packed.avail_used_flags |
@@ -270,17 +272,23 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
         }
 
         curr = svq->desc_next[curr];
-
+        {
+            FILE *f = fopen("vhost_svq_add_packed.txt", "a");
+            fprintf(f, "i: %u, id: %u, len: %u, flags: %u, curr: %u, vq idx: %u\n",
+                    i, descs[i].id, descs[i].len, descs[i].flags, curr, virtio_get_queue_index(svq->vq));
+            fclose(f);
+        }
         if (++i >= svq->vring_packed.vring.num) {
             i = 0;
             svq->vring_packed.avail_used_flags ^=
                 1 << VRING_PACKED_DESC_F_AVAIL |
                 1 << VRING_PACKED_DESC_F_USED;
-        }
-        {
-            FILE *f = fopen("vhost_svq_add_packed.txt", "a");
-            fprintf(f, "i: %u, id: %u, len: %u, flags: %u, curr: %u\n", i, id, descs[i].id, descs[i].flags, curr);
-            fclose(f);
+            {
+                FILE *f = fopen("vhost_svq_add_packed.txt", "a");
+                fprintf(f, "Flip: i: %u, id: %u, flags: %u, curr: %u, svq->vq: %u\n",
+                        i, descs[i].id, svq->vring_packed.avail_used_flags, curr, virtio_get_queue_index(svq->vq));
+                fclose(f);
+            }
         }
     }
 
@@ -299,6 +307,12 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
      */
     smp_wmb();
     svq->vring_packed.vring.desc[head_idx].flags = head_flags;
+    {
+        FILE *f = fopen("vhost_svq_add_packed.txt", "a");
+        fprintf(f, "Finally: i: %u, head_idx: %u, id: %u, len: %u, flags: %u, vq idx: %u\n",
+                i, head_idx, descs[head_idx].id, descs[head_idx].len, descs[head_idx].flags, virtio_get_queue_index(svq->vq));
+        fclose(f);
+    }
 }
 
 static void vhost_svq_kick_split(VhostShadowVirtqueue *svq)
