@@ -254,10 +254,10 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
         {
             FILE *f = fopen("vhost_svq_add_packed.txt", "a");
             FILE *f2 = fopen("gen_log.txt", "a");
-            fprintf(f, "i: %u, id: %u, len: %u, flags: %u, vq idx: %u\n",
-                    i, descs[i].id, descs[i].len, descs[i].flags, virtio_get_queue_index(svq->vq));
-            fprintf(f2, "i: %u, id: %u, len: %u, flags: %u, vq idx: %u\n",
-                    i, descs[i].id, descs[i].len, descs[i].flags, virtio_get_queue_index(svq->vq));
+            fprintf(f, "i: %u, id: %u, len: %u, flags: %u, curr: %u, vq idx: %u\n",
+                    i, descs[i].id, descs[i].len, descs[i].flags, curr, virtio_get_queue_index(svq->vq));
+            fprintf(f2, "i: %u, id: %u, len: %u, flags: %u, curr: %u, vq idx: %u\n",
+                    i, descs[i].id, descs[i].len, descs[i].flags, curr, virtio_get_queue_index(svq->vq));
             fclose(f);
             fclose(f2);
         }
