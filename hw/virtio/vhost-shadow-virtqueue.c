@@ -718,9 +718,9 @@ static VirtQueueElement *vhost_svq_get_buf_packed(VhostShadowVirtqueue *svq,
         VirtQueue *q = svq->vq;
         FILE *f = fopen("vhost_svq_get_buf_packed.txt", "a");
         FILE *f2 = fopen("gen_log.txt", "a");
-        fprintf(f, "size: %u, len: %u, i: %u, vq idx: %u\n",
+        fprintf(f, "size: %u, len: %u, id: %u, vq idx: %u\n",
             svq->vring.num, *len, id, virtio_get_queue_index(q));
-        fprintf(f2, "size: %u, len: %u, i: %u, vq idx: %u\n",
+        fprintf(f2, "size: %u, len: %u, id: %u, vq idx: %u\n",
             svq->vring.num, *len, id, virtio_get_queue_index(q));
         fclose(f);
         fclose(f2);
@@ -730,6 +730,17 @@ static VirtQueueElement *vhost_svq_get_buf_packed(VhostShadowVirtqueue *svq,
     svq->desc_state[id].ndescs = 0;
     last_used_chain = vhost_svq_last_desc_of_chain(svq, num, id);
     svq->desc_next[last_used_chain] = svq->free_head;
+    {
+        VirtQueue *q = svq->vq;
+        FILE *f = fopen("vhost_svq_get_buf_packed.txt", "a");
+        FILE *f2 = fopen("gen_log.txt", "a");
+        fprintf(f, "id: %u, last_used_chain: %u, free_head: %u, vq idx: %u\n",
+            id, last_used_chain, svq->free_head, virtio_get_queue_index(q));
+        fprintf(f2, "id: %u, last_used_chain: %u, free_head: %u, vq idx: %u\n",
+            id, last_used_chain, svq->free_head, virtio_get_queue_index(q));
+        fclose(f);
+        fclose(f2);
+    }
     svq->free_head = id;
     svq->num_free += num;
 
@@ -743,9 +754,9 @@ static VirtQueueElement *vhost_svq_get_buf_packed(VhostShadowVirtqueue *svq,
         VirtQueue *q = svq->vq;
         FILE *f = fopen("vhost_svq_get_buf_packed.txt", "a");
         FILE *f2 = fopen("gen_log.txt", "a");
-        fprintf(f, "num: %u, free_head: %u, i: %u, last_used: %u, used_wrap_counter: %u, vq idx: %u\n",
+        fprintf(f, "num: %u, free_head: %u, id: %u, last_used: %u, used_wrap_counter: %u, vq idx: %u\n",
             num, svq->free_head, id, last_used, used_wrap_counter, virtio_get_queue_index(q));
-        fprintf(f2, "num: %u, free_head: %u, i: %u, last_used: %u, used_wrap_counter: %u, vq idx: %u\n",
+        fprintf(f2, "num: %u, free_head: %u, id: %u, last_used: %u, used_wrap_counter: %u, vq idx: %u\n",
             num, svq->free_head, id, last_used, used_wrap_counter, virtio_get_queue_index(q));
         fclose(f);
         fclose(f2);
