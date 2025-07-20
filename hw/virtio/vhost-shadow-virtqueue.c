@@ -180,7 +180,12 @@ static bool vhost_svq_vring_write_descs(VhostShadowVirtqueue *svq, hwaddr *sg,
         }
         descs[i].addr = cpu_to_le64(sg[n]);
         descs[i].len = cpu_to_le32(iovec[n].iov_len);
-
+        {
+            FILE *f = fopen("vhost_svq_add_split.txt", "a");
+            fprintf(f, "id: %u, len: %u, flags: %u, addr: %lu, vq idx: %u\n",
+                    i, descs[i].len, descs[i].flags, descs[i].addr, virtio_get_queue_index(svq->vq));
+            fclose(f);
+        }
         last = i;
         i = svq->desc_next[i];
     }
