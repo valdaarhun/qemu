@@ -728,7 +728,7 @@ static VirtQueueElement *vhost_svq_get_buf_packed(VhostShadowVirtqueue *svq,
 
     num = svq->desc_state[id].ndescs;
     svq->desc_state[id].ndescs = 0;
-    last_used_chain = vhost_svq_last_desc_of_chain(svq, num, id);
+    last_used_chain = vhost_svq_last_desc_of_chain(svq, num, id); // TODO: check
     svq->desc_next[last_used_chain] = svq->free_head;
     {
         VirtQueue *q = svq->vq;
@@ -1040,6 +1040,7 @@ void vhost_svq_start(VhostShadowVirtqueue *svq, VirtIODevice *vdev,
     svq->shadow_avail_idx = 0;
     svq->shadow_used_idx = 0;
     svq->last_used_idx = 0;
+    svq->free_head = 0;
     svq->vdev = vdev;
     svq->vq = vq;
     svq->iova_tree = iova_tree;
