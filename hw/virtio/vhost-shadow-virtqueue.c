@@ -331,6 +331,14 @@ static void vhost_svq_add_packed(VhostShadowVirtqueue *svq,
                 i, head_idx, descs[head_idx].id, descs[head_idx].len, descs[head_idx].flags, virtio_get_queue_index(svq->vq));
         fclose(f);
         fclose(f2);
+        f = fopen("vhost_svq_add_packed_desc_next.txt", "a");
+        for (unsigned ii = 0; ii < 20; ii++) {
+            VirtQueue *q = svq->vq;
+            f = fopen("vhost_svq_add_packed_desc_next.txt", "a");
+            fprintf(f, "svq->desc_next[%u]: %u, vq idx: %u\n",
+                ii, svq->desc_next[ii], virtio_get_queue_index(q));
+        }
+        fclose(f);
     }
 }
 
@@ -763,6 +771,13 @@ static VirtQueueElement *vhost_svq_get_buf_packed(VhostShadowVirtqueue *svq,
     }
     last_used = (last_used | (used_wrap_counter << VRING_PACKED_EVENT_F_WRAP_CTR));
     svq->last_used_idx = last_used;
+    FILE *f = fopen("vhost_svq_get_buf_packed_desc_next.txt", "a");
+    for (unsigned i = 0; i < 20; i++) {
+        VirtQueue *q = svq->vq;
+        fprintf(f, "svq->desc_next[%u]: %u, vq idx: %u\n",
+            i, svq->desc_next[i], virtio_get_queue_index(q));
+    }
+    fclose(f);
     return g_steal_pointer(&svq->desc_state[id].elem);
 }
 
