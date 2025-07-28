@@ -575,7 +575,17 @@ static bool vhost_svq_more_used_packed(VhostShadowVirtqueue *svq)
     flags = le16_to_cpu(svq->vring_packed.vring.desc[last_used].flags);
     avail_flag = !!(flags & (1 << VRING_PACKED_DESC_F_AVAIL));
     used_flag = !!(flags & (1 << VRING_PACKED_DESC_F_USED));
-
+    {
+        FILE *f = fopen("flush.txt", "a");
+        FILE *f2 = fopen("gen_log.txt", "a");
+        VirtQueue *q = svq->vq;
+        fprintf(f, "last_used: %u, used_wrap_counter: %u, flags: %u, avail_flag: %u, used_flag: %u, vq idx: %u\n",
+                last_used, used_wrap_counter, flags, avail_flag, used_flag, virtio_get_queue_index(q));
+        fprintf(f, "last_used: %u, used_wrap_counter: %u, flags: %u, avail_flag: %u, used_flag: %u, vq idx: %u\n",
+                last_used, used_wrap_counter, flags, avail_flag, used_flag, virtio_get_queue_index(q));
+        fclose(f);
+        fclose(f2);
+    }
     return avail_flag == used_flag && used_flag == used_wrap_counter;
 }
 
